@@ -1,8 +1,11 @@
 from django.shortcuts import render
 from django.views import View
-from django.db.models import OuterRef, Subquery, F, ExpressionWrapper, DecimalField
+from django.db.models import OuterRef, Subquery, F, ExpressionWrapper, DecimalField, Sum, Case, When
 from .models import Product, Discount, Cart
 from django.core.paginator import Paginator
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib.auth.models import User
+from django.utils import timezone
 
 
 # Create your views here.
@@ -222,8 +225,67 @@ class ProductSingleView(View):
 class CartView(View):
 
     def get(self, request):
-        cart = Cart.objects.filter(user=request.user).annotate(total_price=F('product__price') * F('quantity'))
+        user_cart = Cart.objects.filter(user=request.user).select_related('product')
+        total_discount = Case(When(product__discount__value__gte=0,
+                                   product__discount__date_begin__lte=timezone.now(),
+                                   product__discount__date_end__gte=timezone.now(),
+                                   then=F('total_price') * F('product__discount__value') / 100),
+                              default=0,
+                              output_field=DecimalField(max_digits=10, decimal_places=2)
+                              )
+        cart = user_cart.annotate(
+            total_price=F('product__price') * F('quantity'),
+            total_discount=total_discount,
+            total_price_with_discount=F('total_price') - F('total_discount'),
+        )
 
-        return render(request, 'shop/cart.html', {"data": cart})
+        sum_data = cart.aggregate(sum_price=Sum('total_price'),
+                                  sum_discount=Sum('total_discount'),
+                                  sum_price_with_discount=Sum('total_price_with_discount'))
+
+        context = {"data": cart}
+        context.update(sum_data)
+
+        return render(request, 'shop/cart.html', context)
+
+        # cart = Cart.objects.filter(user=request.user).annotate(total_price=F('product__price') * F('quantity'))
+        # return render(request, 'shop/cart.html', {"data": cart})
 
         #return render(request, 'shop/cart.html')
+
+
+class ViewCartBuy(View):
+
+    def get(self, request, product_id):
+        product = get_object_or_404(Product, id=product_id)
+        user = get_object_or_404(User, id=request.user.id)
+        cart_items = Cart.objects.filter(user=user, product=product)
+        if cart_items:
+            cart_item = cart_items[0]
+            cart_item.quantity += 1
+        else:
+            cart_item = Cart(user=user, product=product)
+        cart_item.save()
+        return redirect('shop:cart')
+
+class ViewCartAdd(View):
+
+    def get(self, request, product_id):
+        product = get_object_or_404(Product, id=product_id)
+        user = get_object_or_404(User, id=request.user.id)
+        cart_items = Cart.objects.filter(user=user, product=product)
+        if cart_items:
+            cart_item = cart_items[0]
+            cart_item.quantity += 1
+        else:
+            cart_item = Cart(user=user, product=product)
+        cart_item.save()
+        return redirect('shop:shop')
+
+
+class ViewCartDelete(View):
+    def get(self, request, product_id):
+        cart_item = Cart.objects.get(user=request.user, product__id=product_id)
+        cart_item.delete()
+        return redirect('shop:cart')
+
