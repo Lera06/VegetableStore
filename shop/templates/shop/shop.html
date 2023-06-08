@@ -88,19 +88,31 @@
           <div class="col text-center">
             <div class="block-27">
               <ul>
-                <li><a href="#">&lt;</a></li>
-                <li class="active"><span>1</span></li>
-                <li><a href="#">2</a></li>
-                <li><a href="#">3</a></li>
-                <li><a href="#">4</a></li>
-                <li><a href="#">5</a></li>
-                <li><a href="#">&gt;</a></li>
-              </ul>
-            </div>
+				  {% if previous %}
+					<li><a href="{% url 'shop:shop' %}?category={{category}}&page={{page|add:-1}}"><</a></li>
+				  {% else %}
+				  <li><</li>
+				  {% endif %}
+				 {% for page_value in data_pages %}
+					{% if page == page_value %}
+					<li class="active"><span>{{page_value}}</span></li>
+					{% elif page_value == '...' %}
+   					<li>{{page_value}}</li>
+					{% else %}
+					<li><a href="{% url 'shop:shop' %}?category={{category}}&page={{page_value}}">{{page_value}}</a></li>
+				  	{% endif %}
+				  {% endfor %}
+				  {% if next %}
+					<li><a href="{% url 'shop:shop' %}?category={{category}}&page={{page|add:1}}">></a></li>
+					{% else %}
+					<li>></li>
+					{% endif %}
+			  </ul>
+			</div>
           </div>
         </div>
     	</div>
-     </section>
+	</section>
 		<section class="ftco-section ftco-no-pt ftco-no-pb py-5 bg-light">
       <div class="container py-4">
         <div class="row d-flex justify-content-center py-5">
