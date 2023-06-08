@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.views import View
 from django.db.models import OuterRef, Subquery, F, ExpressionWrapper, DecimalField
-from .models import Product, Discount
+from .models import Product, Discount, Cart
 from django.core.paginator import Paginator
 
 
@@ -222,4 +222,8 @@ class ProductSingleView(View):
 class CartView(View):
 
     def get(self, request):
-        return render(request, 'shop/cart.html')
+        cart = Cart.objects.filter(user=request.user).annotate(total_price=F('product__price') * F('quantity'))
+
+        return render(request, 'shop/cart.html', {"data": cart})
+
+        #return render(request, 'shop/cart.html')
