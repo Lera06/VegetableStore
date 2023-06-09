@@ -222,6 +222,7 @@ class ProductSingleView(View):
     #     return render(request, 'shop/product-single.html', context=data[id])
 
 
+
 class CartView(View):
 
     def get(self, request):
@@ -281,6 +282,8 @@ class ViewCartAdd(View):
             cart_item = Cart(user=user, product=product)
         cart_item.save()
         return redirect('shop:shop')
+
+
 
 
 class ViewCartDelete(View):
