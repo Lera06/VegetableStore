@@ -285,7 +285,6 @@ class ViewCartAdd(View):
 
 
 
-
 class ViewCartDelete(View):
     def get(self, request, product_id):
         cart_item = Cart.objects.get(user=request.user, product__id=product_id)

@@ -74,7 +74,11 @@
 	          		<p style="color: #000;">600 kg available</p>
 	          	</div>
           	</div>
-          	<p><a href="{% url 'shop:add' product.id %}" class="btn btn-black py-3 px-5">Add to Cart</a></p>
+					{% if request.user.is_authenticated %}
+          			<p><a href="{% url 'shop:add' product.id %}" class="btn btn-black py-3 px-5">Add to Cart</a></p>
+					{% else %}
+					<p><a href="{% url 'login:signup' %}" class="btn btn-black py-3 px-5">Add to Cart</a></p>
+					{% endif %}
     			</div>
     		</div>
     	</div>
