@@ -47,7 +47,19 @@ INSTALLED_APPS = [
     'wishlist',
     'checkout',
     'login',
+    'social_django',
 ]
+
+AUTHENTICATION_BACKENDS = (
+   'social_core.backends.github.GithubOAuth2',
+   'django.contrib.auth.backends.ModelBackend',
+)
+
+
+SOCIAL_AUTH_GITHUB_KEY = os.getenv('SOCIAL_AUTH_GITHUB_KEY')
+SOCIAL_AUTH_GITHUB_SECRET = os.getenv('SOCIAL_AUTH_GITHUB_SECRET')
+SOCIAL_AUTH_GITHUB_SCOPE = ['user:email', 'read:user']
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -143,6 +155,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #STATICFILES_DIRS = [Path.joinpath(BASE_DIR, 'static')]
 #STATIC_ROOT = Path.joinpath(BASE_DIR, 'static')
 
-# LOGIN_REDIRECT_URL = 'home:index'
+LOGIN_REDIRECT_URL = '/'
 # LOGOUT_REDIRECT_URL = 'home:index'
 
