@@ -38,6 +38,7 @@ class SignUpView(View):
     def get(self, request):
         return render(request, 'login/signup.html')
 
+
     def post(self, request):
         form = CustomUserCreationForm(data=request.POST)
         if form.is_valid():
