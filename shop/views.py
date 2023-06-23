@@ -6,9 +6,11 @@ from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.http import HttpResponseRedirect
 
 
 # Create your views here.
+
 # Функцмя для отображения страниц
 def get_pages_list(page, max_pages):
     if max_pages < 5:
@@ -222,33 +224,33 @@ class ProductSingleView(View):
     #     return render(request, 'shop/product-single.html', context=data[id])
 
 
-
 class CartView(View):
 
     def get(self, request):
-        user_cart = Cart.objects.filter(user=request.user).select_related('product')
-        total_discount = Case(When(product__discount__value__gte=0,
-                                   product__discount__date_begin__lte=timezone.now(),
-                                   product__discount__date_end__gte=timezone.now(),
-                                   then=F('total_price') * F('product__discount__value') / 100),
-                              default=0,
-                              output_field=DecimalField(max_digits=10, decimal_places=2)
+        if request.user.is_authenticated:
+            user_cart = Cart.objects.filter(user=request.user).select_related('product')
+            total_discount = Case(When(product__discount__value__gte=0,
+                                       product__discount__date_begin__lte=timezone.now(),
+                                       product__discount__date_end__gte=timezone.now(),
+                                       then=F('total_price') * F('product__discount__value') / 100),
+                                       default=0,
+                                       output_field=DecimalField(max_digits=10, decimal_places=2)
                               )
-        cart = user_cart.annotate(
+            cart = user_cart.annotate(
             total_price=F('product__price') * F('quantity'),
             total_discount=total_discount,
             total_price_with_discount=F('total_price') - F('total_discount'),
         )
 
-        sum_data = cart.aggregate(sum_price=Sum('total_price'),
-                                  sum_discount=Sum('total_discount'),
-                                  sum_price_with_discount=Sum('total_price_with_discount'))
+            sum_data = cart.aggregate(sum_price=Sum('total_price'),
+                                      sum_discount=Sum('total_discount'),
+                                      sum_price_with_discount=Sum('total_price_with_discount'))
 
-        context = {"data": cart}
-        context.update(sum_data)
+            context = {"data": cart}
+            context.update(sum_data)
 
-        return render(request, 'shop/cart.html', context)
-
+            return render(request, 'shop/cart.html', context)
+        return redirect("login:login")
         # cart = Cart.objects.filter(user=request.user).annotate(total_price=F('product__price') * F('quantity'))
         # return render(request, 'shop/cart.html', {"data": cart})
 
@@ -281,7 +283,9 @@ class ViewCartAdd(View):
         else:
             cart_item = Cart(user=user, product=product)
         cart_item.save()
-        return redirect('shop:shop')
+
+        return HttpResponseRedirect(self.request.META.get('HTTP_REFERER'))
+        #return redirect('shop:shop')
 
 
 
