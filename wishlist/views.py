@@ -39,7 +39,7 @@ class WishlistViewSet(viewsets.ModelViewSet):
                 wish_item = Wishlist(user=request.user, product=product)
         wish_item.save()
 
-        return response.Response({'message': 'Product added to whishlist'}, status=201)
+        return response.Response({'message': 'Product added to wishlist'}, status=201)
 
     def update(self, request, *args, **kwargs):
         wish_item = get_object_or_404(Wishlist, id=kwargs['pk'])
