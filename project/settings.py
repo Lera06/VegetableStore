@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'checkout',
     'login',
     'social_django',
+    'rest_framework',
 ]
 
 AUTHENTICATION_BACKENDS = (

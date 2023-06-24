@@ -1,5 +1,9 @@
 from django.urls import path
-from .views import WishlistView, WhishlistViewDelete, WishlistViewAdd
+from .views import WishlistView, WhishlistViewDelete, WishlistViewAdd, WishlistViewSet
+from rest_framework import routers
+
+router = routers.DefaultRouter()
+router.register(r'wish', WishlistViewSet)
 
 app_name = 'wishlist'
 
